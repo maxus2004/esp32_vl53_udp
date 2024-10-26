@@ -10,6 +10,7 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 #include "sensors.h"
+#include "wifi.h"
 
 
 static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data){
@@ -46,8 +47,8 @@ void wifi_init(){
 
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = "Home",
-            .password = "DoroshinMaxXXX"
+            .ssid = WIFI_SSID,
+            .password = WIFI_PASSWORD
         },
     };
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
