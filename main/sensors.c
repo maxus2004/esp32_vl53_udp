@@ -47,7 +47,7 @@ void setup_i2c(){
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
     conf.scl_io_num = PIN_SCL;
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.master.clk_speed = I2C_FREQ;
+    conf.master.clk_speed = I2C_FREQ_HZ;
     ESP_ERROR_CHECK(i2c_param_config(I2C_PORT, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_PORT, conf.mode, 0, 0, 0));
 }
@@ -69,7 +69,7 @@ void init_sensor(VL53L0X_Dev_t* sensor){
                               VL53L0X_DEVICEMODE_SINGLE_RANGING,
                               VL53L0X_GPIOFUNCTIONALITY_NEW_MEASURE_READY,
                               VL53L0X_INTERRUPTPOLARITY_LOW));
-    VL53_ERROR_CHECK(VL53L0X_SetMeasurementTimingBudgetMicroSeconds(sensor, 33000));
+    VL53_ERROR_CHECK(VL53L0X_SetMeasurementTimingBudgetMicroSeconds(sensor, SENSORS_TIMING_BUDGET_MS*1000));
 }
 
 void sensors_init(){
