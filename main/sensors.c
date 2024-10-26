@@ -20,22 +20,19 @@ bool sensors_enabled = false;
 void _vl53_error_check_failed(VL53L0X_Error rc, const char *file, int line, const char *function, const char *expression)
 {
     printf("VL53_ERROR_CHECK failed: VL53L0X_Error %i", rc);
-#ifdef CONFIG_ESP_ERR_TO_NAME_LOOKUP
     char buf[32];
     VL53L0X_GetPalErrorString(rc, buf);
     printf(" (%s)", buf);
-#endif //CONFIG_ESP_ERR_TO_NAME_LOOKUP
     printf(" at %p\n", __builtin_return_address(0));
     printf("file: \"%s\" line %d\nfunc: %s\nexpression: %s\n", file, line, function, expression);
     abort();
 }
 
-#define VL53_ERROR_CHECK(x) do {                                    \
-    VL53L0X_Error err_rc_ = (x);                                    \
-    if (unlikely(err_rc_ != VL53L0X_ERROR_NONE)) {                  \
-        _vl53_error_check_failed(err_rc_, __FILE__, __LINE__,       \
-                                __ASSERT_FUNC, #x);                 \
-    }                                                               \
+#define VL53_ERROR_CHECK(x) do {                                                  \
+    VL53L0X_Error err_rc_ = (x);                                                  \
+    if (unlikely(err_rc_ != VL53L0X_ERROR_NONE)) {                                \
+        _vl53_error_check_failed(err_rc_, __FILE__, __LINE__, __ASSERT_FUNC, #x); \
+    }                                                                             \
 } while(0)
 
 
@@ -52,24 +49,22 @@ void setup_i2c(){
     ESP_ERROR_CHECK(i2c_driver_install(I2C_PORT, conf.mode, 0, 0, 0));
 }
 
-void init_sensor(VL53L0X_Dev_t* sensor){
+void init_sensor(VL53L0X_Dev_t *sensor, int address){
     uint8_t isApertureSpads;
     uint8_t PhaseCal;
     uint32_t refSpadCount;
     uint8_t VhvSettings;
-
     sensor->i2c_port_num = I2C_PORT;
     sensor->i2c_address = 0x29;
     VL53_ERROR_CHECK(VL53L0X_DataInit(sensor));
     VL53_ERROR_CHECK(VL53L0X_StaticInit(sensor));
     VL53_ERROR_CHECK(VL53L0X_PerformRefSpadManagement(sensor, &refSpadCount, &isApertureSpads));
     VL53_ERROR_CHECK(VL53L0X_PerformRefCalibration(sensor, &VhvSettings, &PhaseCal));
-    VL53_ERROR_CHECK(VL53L0X_SetDeviceMode(sensor, VL53L0X_DEVICEMODE_SINGLE_RANGING));
-    VL53_ERROR_CHECK(VL53L0X_SetGpioConfig(sensor, 0,
-                              VL53L0X_DEVICEMODE_SINGLE_RANGING,
-                              VL53L0X_GPIOFUNCTIONALITY_NEW_MEASURE_READY,
-                              VL53L0X_INTERRUPTPOLARITY_LOW));
     VL53_ERROR_CHECK(VL53L0X_SetMeasurementTimingBudgetMicroSeconds(sensor, SENSORS_TIMING_BUDGET_MS*1000));
+    VL53_ERROR_CHECK(VL53L0X_SetDeviceMode(sensor, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING));
+    VL53_ERROR_CHECK(VL53L0X_StartMeasurement(sensor));
+    VL53_ERROR_CHECK(VL53L0X_SetDeviceAddress(sensor, address<<1));
+    sensor->i2c_address = address;
 }
 
 void sensors_init(){
@@ -79,17 +74,14 @@ void sensors_init(){
         ESP_ERROR_CHECK(gpio_set_direction(xshuts[i], GPIO_MODE_OUTPUT));
     }
     vTaskDelay(pdMS_TO_TICKS(10));
-    
+
     setup_i2c();
 
     for (int i = 0; i<SENSORS_COUNT;i++){
         ESP_ERROR_CHECK(gpio_set_level(xshuts[i], 1));
         vTaskDelay(pdMS_TO_TICKS(10));
-        init_sensor(&sensors[i]);
-        VL53_ERROR_CHECK(VL53L0X_SetDeviceAddress(&sensors[i], i*2));
-        sensors[i].i2c_address = i;
-        VL53_ERROR_CHECK(VL53L0X_SetDeviceMode(&sensors[i], VL53L0X_DEVICEMODE_CONTINUOUS_RANGING));
-        VL53_ERROR_CHECK(VL53L0X_StartMeasurement(&sensors[i]));
+
+        init_sensor(&sensors[i], i);
     }
 }
 
