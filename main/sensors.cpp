@@ -12,7 +12,7 @@ bool new_values[SENSORS_COUNT];
 bool sensors_enabled = false;
 
 extern "C" void sensors_init(){
-    for (int i = 0; i<SENSORS_COUNT;i++){
+    for (int i = 0; i<sizeof(xshuts)/sizeof(gpio_num_t);i++){
         gpio_reset_pin(xshuts[i]);
         gpio_set_level(xshuts[i], 0);
         gpio_set_direction(xshuts[i], GPIO_MODE_OUTPUT);
