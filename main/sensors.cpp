@@ -8,8 +8,8 @@ extern "C" {
 gpio_num_t xshuts[SENSORS_COUNT] = {SENSORS_XSHUTS};
 VL53L0X sensors[SENSORS_COUNT];
 uint16_t sensor_values[SENSORS_COUNT];
+bool new_values[SENSORS_COUNT];
 bool sensors_enabled = false;
-bool new_values_available = false;
 
 extern "C" void sensors_init(){
     for (int i = 0; i<SENSORS_COUNT;i++){
@@ -44,7 +44,7 @@ extern "C" void sensors_loop(){
                 VL53L0X_GetRangingMeasurementData(&sensors[i].vl53l0x_dev, &range_data);
                 VL53L0X_ClearInterruptMask(&sensors[i].vl53l0x_dev, 0);
                 sensor_values[i] = range_data.RangeMilliMeter;
-                if (i == SENSORS_COUNT-1) new_values_available = true;
+                new_values[i] = true;
             }
         }
         vTaskDelay(pdMS_TO_TICKS(1));
@@ -65,10 +65,12 @@ extern "C" void sensors_get_values(uint16_t *values){
 }
 
 extern "C" bool sensors_new_values_available(){
-    if (new_values_available){
-        new_values_available = false;
-        return true;
-    }else{
-        return false;
+    for (int i = 0; i<SENSORS_COUNT;i++){
+        if (new_values[i] == false){
+            return false;
+        }
     }
+    memset(new_values,0,SENSORS_COUNT);
+    return true;
+    
 }
