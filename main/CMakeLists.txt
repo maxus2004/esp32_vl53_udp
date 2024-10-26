@@ -1,2 +1,2 @@
-set(COMPONENT_SRCS main.c sensors.cpp wifi.c)
+set(COMPONENT_SRCS main.c sensors.c wifi.c)
 register_component()

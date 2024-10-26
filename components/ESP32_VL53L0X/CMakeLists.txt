@@ -9,7 +9,6 @@ set(COMPONENT_SRCS
 )
 
 set(COMPONENT_ADD_INCLUDEDIRS
-    inc
     api/core/inc
     api/platform/inc
 )
