@@ -5,7 +5,7 @@ extern "C" {
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-gpio_num_t xshuts[SENSORS_COUNT] = {SENSORS_XSHUTS};
+gpio_num_t xshuts[] = {SENSORS_XSHUTS};
 VL53L0X sensors[SENSORS_COUNT];
 uint16_t sensor_values[SENSORS_COUNT];
 bool new_values[SENSORS_COUNT];
@@ -20,7 +20,7 @@ extern "C" void sensors_init(){
 
     vTaskDelay(pdMS_TO_TICKS(100));
     
-    sensors[1].i2cMasterInit(PIN_SDA, PIN_SCL, 30000);
+    sensors[0].i2cMasterInit(PIN_SDA, PIN_SCL, 30000);
 
     for (int i = 0; i<SENSORS_COUNT;i++){
         gpio_set_level(xshuts[i], 1);
