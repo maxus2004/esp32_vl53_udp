@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void sensors_loop();
 void sensors_init();
 void sensors_start_measuring();
 void sensors_stop_measuring();
