@@ -13,6 +13,7 @@ bool send_only_new_measurements = true;
 void app_main() {
     nvs_flash_init();
     wifi_init();
+    wait_until_connected();
 
     sensors_init();
     sensors_start_measuring();
