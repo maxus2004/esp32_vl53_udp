@@ -72,5 +72,4 @@ extern "C" bool sensors_new_values_available(){
     }
     memset(new_values,0,SENSORS_COUNT);
     return true;
-    
 }
